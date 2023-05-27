@@ -10,9 +10,11 @@ var nameFB = baseName + sep + "FB";
 var nameLS = baseName + sep + "LS";
 var nameGoogle = baseName + sep + "Google";
 var name500px = baseName + sep + "500px";
+var nameWhatsapp = baseName + sep + "Whatsapp";
 var w = current_document.width.value;
 var h = current_document.height.value;
 var pathExport = "C:/Users/javie/Desktop/fotosPosts/"
+//var pathExport = "C:/Users/javie.DESKTOP-1FHRTJH/Desktop/fotosPosts/"
 var withBorders = true;
 var borderRatio = 0.04;
 var instagramWidth = 1080;
@@ -28,16 +30,20 @@ var gaussianBlurRadiusEnfoque = 20;
 var signatureSizeLS = 150;
 var signatureSizeGoogle = 100;
 var panoramaPiecesIG = 0;
-var sitckInRatioIG = 4;
+var sitckInRatioIG = 2;
+var strLocation = "ASILAH";
 //1 1080x1080 1:1
 //2 1080x721 3:2
-//3 1080x771 5:4
+//3 1080x771 
 //4 1080x1350 4:5
+//5 1080x864 5:4
+//6 1920x1080 16:9
 
 
 //next tasks: 15MB Facebook
 //next tasks: bigger signature LS
 //next tasks: save for 500px
+
 
 
 saveForInstagram(); //guardar para Instagram
@@ -46,6 +52,8 @@ saveForFacebook(); //guardar para facebook
 saveForLocationScout(); //guardar para Instagram
 saveForGoogle(); //guardar para Google
 saveFor500px(); //guardar para 500px
+saveForWhatsapp();
+
 
 function resizeForRatio(intRatio) {
     
@@ -65,23 +73,181 @@ function resizeForRatio(intRatio) {
         case 4:
             current_document.resizeCanvas(1080 , 1350, AnchorPosition.MIDDLECENTER);
             break;
-        
+        case 5:
+            current_document.resizeCanvas(1080 , 864, AnchorPosition.MIDDLECENTER);
+            break;
+        case 6:
+            current_document.resizeCanvas(1080 , 607, AnchorPosition.MIDDLECENTER);
+            break;
+    
         }
     
     }
-//creamos un documento nuevo acoplado
-function duplicateFlattenDocument(dupeName) {
-    current_document.duplicate((dupeName), true);
-    current_document = app.activeDocument;  
-    current_document.flatten();
-}
+
+function saveForInstagram() {
+    
+    duplicateFlattenDocument(dupeName); //creamos un documento nuevo acoplado
+    //la imagen tiene 3700x3700 antes de los bordes
+    if (withBorders) {
+        createBorders(1);
+        }
+    //la imagen tiene 3848x3848 despues de los bordes
+
+    if (w==h) { //formato cuadrado
+        //aqui si es un 2 (landscape) tenemos que reducir a 721 y luego hacer un resizecanvas a 1080 de ancho
+        if(sitckInRatioIG==2){
+            current_document.resizeImage(null,721,72,ResampleMethod.BICUBIC);
+            current_document.resizeCanvas(1080 , 721, AnchorPosition.MIDDLECENTER);
+            
+        }else{
+            current_document.resizeImage(UnitValue(instagramWidth,"px"),null,72,ResampleMethod.BICUBIC);
+        }
+    } else if (w>h) { //landscape
+        current_document.resizeImage(UnitValue(instagramWidth,"px"),null,72,ResampleMethod.BICUBIC);
+     } else if (w<h) { //portrait
+        current_document.resizeImage(null,UnitValue(instagramHeight,"px"),72,ResampleMethod.BICUBIC); 
+        if (current_document.width.value<instagramWidth) {
+            current_document.resizeCanvas(instagramWidth , instagramHeight, AnchorPosition.MIDDLECENTER);
+        }
+    }
+    //la imagen tiene 1080x1080 despues del resize
+
+    if(sitckInRatioIG>0){
+        resizeForRatio(sitckInRatioIG);
+    }
+    
+   // enfoqueLuzIntensa();
+    exportForWeb(nameIG);
+
+    }
+
+function saveForWhatsapp(){
+ 
+     duplicateFlattenDocument(dupeName); //creamos un documento nuevo acoplado
+ 
+ 
+    //Facebook prefered widths 730px, 960px, 2048px
+    if (w>=1080) {
+        var fW = 1080;
+    }else if (w>=960) {
+        var fW = 960;
+     }else if (w>=730) {
+         var fW = 730;
+     }else{
+         var fW = current_document.width.value;     
+     }
+    current_document.resizeImage(UnitValue( fW,"px"),null,72,ResampleMethod.BICUBIC);
+    var fH = current_document.height.value;
+    
+    var options = new ExportOptionsSaveForWeb();
+    options.quality = 100;
+    options.format = SaveDocumentType.JPEG;
+    options.optimized = true;
+    options.includeProfile = true;
+    current_document.changeMode(ChangeMode.RGB);
+
+ if(!documents.length) return;  
+ 
+ 	var fileObj = new File("C:/Sites/photoshop/location.png");	 		               	// the passed file
+	if(!fileObj.exists){  									// If file does not exits tell user 
+		alert(fileObj.name  + " does not exist!"); 			// Alert User 
+		return;  											// return
+	} 
+	try{ 
+        
+        var doc = app.activeDocument;						// set Doc object to active document
+       var layers = doc.layers;				// get layers
+		doc.activeLayer = layers[0];			// Target Top Layer
+    
+		placeFile(fileObj);
+        doc.activeLayer.rasterize(RasterizeType.ENTIRELAYER)
+
+  var Position = doc.activeLayer.bounds;
+/*
+    switch(sitckInRatioIG) {
+        case 1:
+            Position[0] = 80 - Position[0];
+            Position[1] = 80 - Position[1];
+            break;
+        case 2:
+            Position[0] = doc.width - 60 - Position[0];
+            Position[1] = 20 - Position[1];
+            break;
+        case 3:
+            Position[0] = 80 - Position[0];
+            Position[1] = doc.height - 240 - Position[1] ;
+            break;
+        case 4:
+            Position[0] = doc.width ;
+            Position[1] = doc.height ;
+            break;
+        }
+    */
+Position[0] = doc.width - 60 - Position[0];
+Position[1] = 20 - Position[1];
+  
+  doc.activeLayer.translate(-Position[0],Position[1]);
+
+     var newColor = new SolidColor();
+    newColor.rgb.red = 255;
+    newColor.rgb.green = 255;
+    newColor.rgb.blue = 255;
+
+    var myLayerRef = current_document.artLayers.add();
+    myLayerRef.kind = LayerKind.TEXT;
+    myLayerRef.name = "LocationName";
+    var myTextRef = myLayerRef.textItem;
+    myTextRef.color = newColor;
+    myTextRef.size = 50;
+    myTextRef.font = "Calibri-BoldItalic";
+    myTextRef.contents = strLocation;
+    myTextRef.tracking = 15;
+    
+    myTextRef.justification = Justification.LEFT;
+    myLayerRef.blendMode = BlendMode.NORMAL;
+    myLayerRef.opacity = 100;
+
+    myTextRef.position = new Array( 70 , doc.height - 30)
+
+    app.doAction("BordeTexto","JC_Acciones.ATN")
+  
+  /*
+      var myLayerRef2 = current_document.artLayers.add();
+    myLayerRef2.kind = LayerKind.TEXT;
+    myLayerRef2.name = "Flag";
+    var myTextRef2 = myLayerRef2.textItem;
+    myTextRef2.color = newColor;
+    myTextRef2.size = 30;
+    myTextRef2.font = "EmojiOne Color";
+    myTextRef2.contents = "🇫🇷";
+    myTextRef2.tracking = 15;
+    
+    myTextRef2.justification = Justification.LEFT;
+    myLayerRef2.blendMode = BlendMode.NORMAL;
+    myLayerRef2.opacity = 85;
+
+
+
+var theBounds = myLayerRef.bounds;
+var layerWidth = theBounds[2] - theBounds[0];
+var layerHeight = theBounds[3] - theBounds[1];
+
+
+
+    myTextRef2.position = new Array( layerWidth  + 85 , doc.height - 35)
+    
+    app.doAction("BordeTexto","JC_Acciones.ATN")
+    */
+      exportForWeb(nameWhatsapp);
+  }
+catch(e) { alert(e + ': on line ' + e.line); }			// inform user of error  
+	finally{ } 
+  }
 
 function saveForFacebook() {
     
     //max 15MB !!!!!!!!!!!!!
- 
-    
-    
+
     duplicateFlattenDocument(dupeName); //creamos un documento nuevo acoplado
     //Facebook prefered widths 730px, 960px, 2048px
     if (w>=2048) {
@@ -141,6 +307,10 @@ function savePanoForInstagram(panoPieces) {
         case 4:
             current_document.resizeCanvas(1080 , 1350, AnchorPosition.MIDDLECENTER);
             break;
+        case 5:
+            current_document.resizeCanvas(1080 , 864, AnchorPosition.MIDDLECENTER);
+            break;
+        
         
         }
     
@@ -151,32 +321,7 @@ function savePanoForInstagram(panoPieces) {
     
 }
 
-function saveForInstagram() {
-    
-    duplicateFlattenDocument(dupeName); //creamos un documento nuevo acoplado
-    
-    if (withBorders) {
-        createBorders(1);
-        }
 
-
-    if (w==h) { //formato cuadrado
-        current_document.resizeImage(UnitValue(instagramWidth,"px"),null,72,ResampleMethod.BICUBIC);
-    } else if (w>h) { //landscape
-        current_document.resizeImage(UnitValue(instagramWidth,"px"),null,72,ResampleMethod.BICUBIC);
-     } else if (w<h) { //portrait
-        current_document.resizeImage(null,UnitValue(instagramHeight,"px"),72,ResampleMethod.BICUBIC); 
-        if (current_document.width.value<instagramWidth) {
-            current_document.resizeCanvas(instagramWidth , instagramHeight, AnchorPosition.MIDDLECENTER);
-        }
-    }
-    if(sitckInRatioIG>0){
-        resizeForRatio(sitckInRatioIG);
-    }
-   // enfoqueLuzIntensa();
-    exportForWeb(nameIG);
-
-    }
 function saveForLocationScout() {
 
     duplicateFlattenDocument(dupeName); //creamos un documento nuevo acoplado
@@ -224,6 +369,13 @@ function saveFor500px() {
        exportForWeb(name500px);
     }
 
+//creamos un documento nuevo acoplado
+function duplicateFlattenDocument(dupeName) {
+    current_document.duplicate((dupeName), true);
+    current_document = app.activeDocument;  
+    current_document.flatten();
+}
+
 function createBorders(intPanoPieces) {
     var BGcolor = new SolidColor();
     //BGcolor.rgb.red = 255;
@@ -234,7 +386,6 @@ function createBorders(intPanoPieces) {
     app.backgroundColor.rgb.hexValue = BGcolor.rgb.hexValue;
     
     current_document.resizeCanvas(w + ( ( h*(borderRatio+1) ) - h ), h*(borderRatio+1), AnchorPosition.MIDDLECENTER);
-
 
 }
 
@@ -355,3 +506,64 @@ function enfoqueLuzIntensa() {
     newGroup.blendMode = BlendMode.OVERLAY;
     newGroup.opacity = 33;
     }
+
+function placeLogo(Image,Size,Margin,position,angle){  
+	if(!documents.length) return;  							// if no document return
+	var fileObj = new File(Image);	 		               	// the passed file
+	if(!fileObj.exists){  									// If file does not exits tell user 
+		alert(fileObj.name  + " does not exist!"); 			// Alert User 
+		return;  											// return
+	}  
+	try{  
+		var doc = app.activeDocument;						// set Doc object to active document
+		var layers = app.activeDocument.layers;				// get layers
+		app.activeDocument.activeLayer = layers[0];			// Target Top Layer
+		placeFile(fileObj); 								// Place in file the Logo File
+		activeDocument.activeLayer.resize(100 ,100,AnchorPosition.MIDDLECENTER); // Insure Place did not scale layer  
+	//	var SB = activeDocument.activeLayer.bounds; 		// get layers bounds 
+	//	var layerHeight = SB[3] - SB[1];					// get layers height  
+	//	var resizePercent = (100/layerHeight)*(Size/100*doc.height.value); // Percent to resize by 
+	//	activeDocument.activeLayer.resize(resizePercent ,resizePercent,AnchorPosition.MIDDLECENTER);  // Resize width and height by percentage 
+		marginSize = 1/100*doc.height.value;			// Margin size
+		var selectedRegion = Array(Array(0+marginSize,0+marginSize), Array(doc.width-marginSize,0+marginSize), Array(doc.width-marginSize,doc.height-marginSize), Array(0+marginSize,doc.height-marginSize));
+		activeDocument.selection.select(selectedRegion);    // Select  document area for the logo Positioning
+		switch (position){									// Align resized logo smart object layer into position
+			case 1 : align('AdLf'); align('AdTp'); break;
+			case 2 : align('AdCH'); align('AdTp'); break;
+			case 3 : align('AdRg'); align('AdTp'); break;
+			case 4 : align('AdLf'); align('AdCV'); break;
+			case 5 : align('AdCH'); align('AdCV'); activeDocument.selection.deselect(); activeDocument.activeLayer.rotate(angle); break;
+			case 6 : align('AdRg'); align('AdCV'); break;
+			case 7 : align('AdLf'); align('AdBt'); break;
+			case 8 : align('AdCH'); align('AdBt'); break;
+			case 9 : align('AdRg'); align('AdBt'); break;
+			default : break;
+		}
+		app.activeDocument.selection.deselect();			// deselect
+	}
+	catch(e) { alert(e + ': on line ' + e.line); }			// inform user of error  
+	finally{ }  
+} 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+function placeFile(placeFile) {  
+    var desc21 = new ActionDescriptor();  
+    desc21.putPath( charIDToTypeID('null'), new File(placeFile) );  
+    desc21.putEnumerated( charIDToTypeID('FTcs'), charIDToTypeID('QCSt'), charIDToTypeID('Qcsa') );  
+    var desc22 = new ActionDescriptor();  
+    desc22.putUnitDouble( charIDToTypeID('Hrzn'), charIDToTypeID('#Pxl'), 0.000000 );  
+    desc22.putUnitDouble( charIDToTypeID('Vrtc'), charIDToTypeID('#Pxl'), 0.000000 );  
+    desc21.putObject( charIDToTypeID('Ofst'), charIDToTypeID('Ofst'), desc22 );  
+    executeAction( charIDToTypeID('Plc '), desc21, DialogModes.NO );  
+} 
+
+function align(method) {
+	var desc = new ActionDescriptor();
+	var ref = new ActionReference();
+	ref.putEnumerated( charIDToTypeID( "Lyr " ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
+	desc.putReference( charIDToTypeID( "null" ), ref );
+	desc.putEnumerated( charIDToTypeID( "Usng" ), charIDToTypeID( "ADSt" ), charIDToTypeID( method ) );
+	try{
+		executeAction( charIDToTypeID( "Algn" ), desc, DialogModes.NO );
+	}catch(e){}
+}
+
